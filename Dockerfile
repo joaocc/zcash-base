@@ -1,39 +1,111 @@
-FROM ubuntu:latest
+FROM phusion/baseimage:0.9.19
 
-MAINTAINER JoaoCC (joaocc@evoluire.com)
+# from https://github.com/sneak/zcash/Dockerfile
 
-# based on https://hub.docker.com/r/k0st/zcash/~/dockerfile/
+ENV HOME   /var/lib/zcash \
+    GITSRC /usr/local/src/zcash \
+    GITURL https://github.com/sneak/zcash
 
-ENV ZCASH_URL=https://github.com/zcash/zcash.git \
-    ZCASH_VERSION=v1.0.0
+# homedir is a data volume
+VOLUME [ "/var/lib/zcash" ]
 
-RUN apt-get autoclean && apt-get autoremove && apt-get update && \
-    apt-get -qqy install --no-install-recommends build-essential \
-    automake ncurses-dev libcurl4-openssl-dev libssl-dev libgtest-dev \
-    make autoconf automake libtool git apt-utils pkg-config libc6-dev \
-    libcurl3-dev libudev-dev m4 g++-multilib unzip git python zlib1g-dev \
-    wget ca-certificates pwgen bsdmainutils && \
-    rm -rf /var/lib/apt/lists/* && \
+# install build deps
+RUN \
+    echo "# create user and set homedir" && \
+    useradd -s /bin/bash -m -d /var/lib/zcash zcash && \
     \
-    mkdir -p /src/zcash/ && \
-    cd /src/zcash && \
+    echo "# install build deps" && \
+    apt-get update && \
+    apt-get install -y \
+        autoconf \
+        automake \
+        bsdmainutils \
+        build-essential \
+        g++-multilib \
+        git \
+        libc6-dev \
+        libtool \
+        m4 \
+        ncurses-dev \
+        pkg-config \
+        python \
+        time \
+        unzip \
+        wget \
+        zlib1g-dev \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     \
-    git clone ${ZCASH_URL} zcash && \
-    cd zcash && \
-    git checkout ${ZCASH_VERSION} && \
-    ./zcutil/fetch-params.sh && \
-    ./zcutil/build.sh -j4    && \
-    cd /src/zcash/zcash/src  && \
-    /usr/bin/install -c bitcoin-tx zcashd zcash-cli zcash-gtest -t /usr/local/bin/ && \
-    rm -rf /src/zcash/ && \
+    echo "# add source" && \
+    git clone --depth 1 ${GITURL} ${GITSRC} && \
     \
-    adduser --uid 1000 --system zcash && \
-    mv /root/.zcash-params /home/zcash/ && \
-    mkdir -p /home/zcash/.zcash/ && \
-    chown -R zcash /home/zcash && \
-    echo "Success..."
+    echo "# download dependencies" && \
+    cd ${GITSRC}/depends && \
+    make download-linux && \
+    \
+    echo "# build and install to /usr/local/bin" && \
+    echo "# FIXME build and run tests here too" && \
+    mkdir -p /etc/zcash && \
+    ln -s /etc/zcash $HOME/.zcash-params && \
+    cd ${GITSRC} && \
+    bash ./zcutil/fetch-params.sh && \
+    chmod a+rx /etc/zcash && \
+    chmod a+r /etc/zcash/* && \
+    time ./zcutil/build.sh -j$(nproc) && \
+    make install && \
+    cp -av ./depends/x86_64-unknown-linux-gnu/bin/* /usr/local/bin && \
+    \
+    \
+    echo "# create cache dir and set ownership" && \
+    mkdir /var/cache/zcash && \
+    chown zcash:zcash -R /var/cache/zcash && \
+    \
+    echo "# set ownership on keys" && \
+    chmod a+rX -R /etc/zcash && \
+    \
+    echo "set ownership on homedir contents" && \
+    chown zcash:zcash -R /var/lib/zcash && \
+    \
+    echo "# set up service to run on container start" && \
+    mkdir -p /etc/service/zcash && \
+    cp ${GITSRC}/contrib/init/zcashd.run /etc/service/zcash/run && \
+    chmod +x /etc/service/zcash/run && \
+    \
+    \
+    echo "cleanup" && \
+    rm /var/lib/zcash/.zcash-params && \
+    cd / && \
+    rm -rf ${GITSRC} && \
+    rm -rf /var/lib/zcash/.ccache && \
+    \
+    echo "# remove build deps" && \
+    apt-get remove -y \
+        autoconf \
+        automake \
+        bsdmainutils \
+        build-essential \
+        g++-multilib \
+        git \
+        libc6-dev \
+        libtool \
+        m4 \
+        ncurses-dev \
+        pkg-config \
+        python \
+        unzip \
+        wget \
+        zlib1g-dev \
+    && \
+    apt-get autoremove -y && \
+    rm -rf \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/* \
+        /var/cache/* \
+        /usr/include \
+        /usr/local/include \
 
-VOLUME ["/home/zcash/.zcash"]
-USER zcash
 
-WORKDIR /home/zcash
+# ports: RPC & P2P
+EXPOSE 8232 8233
