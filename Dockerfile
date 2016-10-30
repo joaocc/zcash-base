@@ -2,17 +2,17 @@ FROM phusion/baseimage:0.9.19
 
 # from https://github.com/sneak/zcash/Dockerfile
 
-ENV HOME   /var/lib/zcash \
-    GITSRC /usr/local/src/zcash \
-    GITURL https://github.com/sneak/zcash
+ENV HOME=/var/lib/zcash \
+    GITSRC=/usr/local/src/zcash \
+    GITURL=https://github.com/sneak/zcash
 
 # homedir is a data volume
-VOLUME [ "/var/lib/zcash" ]
+VOLUME [ "${HOME}" ]
 
 # install build deps
 RUN \
     echo "# create user and set homedir" && \
-    useradd -s /bin/bash -m -d /var/lib/zcash zcash && \
+    useradd -s /bin/bash -m -d ${HOME} zcash && \
     \
     echo "# install build deps" && \
     apt-get update && \
@@ -65,7 +65,7 @@ RUN \
     chmod a+rX -R /etc/zcash && \
     \
     echo "set ownership on homedir contents" && \
-    chown zcash:zcash -R /var/lib/zcash && \
+    chown zcash:zcash -R ${HOME} && \
     \
     echo "# set up service to run on container start" && \
     mkdir -p /etc/service/zcash && \
@@ -74,10 +74,10 @@ RUN \
     \
     \
     echo "cleanup" && \
-    rm /var/lib/zcash/.zcash-params && \
+    rm ${HOME}/.zcash-params && \
     cd / && \
     rm -rf ${GITSRC} && \
-    rm -rf /var/lib/zcash/.ccache && \
+    rm -rf ${HOME}/.ccache && \
     \
     echo "# remove build deps" && \
     apt-get remove -y \
