@@ -22,10 +22,10 @@ build:latest:
   script:
     - docker build --tag $CONTAINER_BASE_NAME:latest   --pull --file Dockerfile .
 
-build:original:
+build:official:
   stage: build
   script:
-    - docker build --tag $CONTAINER_BASE_NAME:original --pull --file Dockerfile.original .
+    - docker build --tag $CONTAINER_BASE_NAME:official --pull --file Dockerfile.official .
 
 release:latest:
   stage: release
@@ -36,14 +36,14 @@ release:latest:
   dependencies:
     - build:latest
 
-release:original:
+release:official:
   stage: release
   script:
-    - docker push        $CONTAINER_BASE_NAME:original
+    - docker push        $CONTAINER_BASE_NAME:official
   only:
     - master
   dependencies:
-    - build:original
+    - build:official
 
 # older version (working, but only sequentially parellel)
 #
@@ -57,8 +57,8 @@ release:original:
 #     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile           --tag latest    .
 #     - docker push registry.gitlab.com/joaocc/zcash-base:latest
 #
-#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.original  --tag original  .
-#     - docker push registry.gitlab.com/joaocc/zcash-base:original
+#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.official  --tag official  .
+#     - docker push registry.gitlab.com/joaocc/zcash-base:official
 #
 #   only:
 #     - master
