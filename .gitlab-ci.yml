@@ -13,7 +13,7 @@ stages:
 
 variables:
   REGISTRY_GITLAB:       registry.gitlab.com
-  CONTAINER_BASE_NAME:   $REGISTRY_GITLAB/joaocc/zcash-base
+  CONTAINER_BASE_NAME:   $REGISTRY_GITLAB/joaocc/zcash-server
 
 before_script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY_GITLAB
