@@ -4,7 +4,12 @@ build_image:
   - docker:dind
   script:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-    - docker build -t registry.gitlab.com/joaocc/zcash-base .
+
+    - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile           --tag latest    .
     - docker push registry.gitlab.com/joaocc/zcash-base:latest
+
+    - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.original  --tag original  .
+    - docker push registry.gitlab.com/joaocc/zcash-base:original
+
   only:
     - master
