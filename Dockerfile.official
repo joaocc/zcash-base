@@ -32,11 +32,13 @@ RUN \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# add source
-ADD . /usr/local/src/zcash
+## add source
+#ADD . /usr/local/src/zcash
+## add source (tweaked to run outside of zcash git repo)
+RUN git clone --depth 1 https://github.com/sneak/zcash /usr/local/src/zcas
 
 # download dependencies
-RUN cd /usr/local/src/zcash/depends && \
+RUN cd /usr/local/src/zcash/zcash/depends && \
     make download-linux
 
 # build and install to /usr/local/bin
