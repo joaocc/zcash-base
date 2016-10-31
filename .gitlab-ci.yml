@@ -1,15 +1,60 @@
-build_image:
-  image: docker:git
-  services:
-  - docker:dind
+# based on https://docs.gitlab.com/ce/ci/docker/using_docker_build.html
+
+image: docker:latest
+services:
+- docker:dind
+
+stages:
+- build
+# - test
+- release
+# - deploy
+
+variables:
+  CONTAINER_BASE_NAME:   registry.gitlab.com/joaocc/zcash-base
+
+before_script:
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+
+build_:
+  stage: build
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker build --tag $CONTAINER_BASE_NAME:latest   --pull --file Dockerfile .
 
-    - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile           --tag latest    .
-    - docker push registry.gitlab.com/joaocc/zcash-base:latest
+build2:
+  stage: build
+  script:
+    - docker build --tag $CONTAINER_BASE_NAME:original --pull --file Dockerfile.original .
 
-    - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.original  --tag original  .
-    - docker push registry.gitlab.com/joaocc/zcash-base:original
-
+release:
+  stage: release
+  script:
+    - docker push        $CONTAINER_BASE_NAME:latest
   only:
     - master
+
+release2:
+  stage: release
+  script:
+    - docker push        $CONTAINER_BASE_NAME:original
+  only:
+    - master
+
+# older version (working, but only sequentially parellel)
+#
+# build_image:
+#   image: docker:git
+#   services:
+#   - docker:dind
+#   script:
+#     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+#
+#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile           --tag latest    .
+#     - docker push registry.gitlab.com/joaocc/zcash-base:latest
+#
+#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.original  --tag original  .
+#     - docker push registry.gitlab.com/joaocc/zcash-base:original
+#
+#   only:
+#     - master
+
