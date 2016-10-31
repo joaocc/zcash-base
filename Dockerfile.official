@@ -104,6 +104,6 @@ EXPOSE 8233
 
 # set up service to run on container start
 RUN mkdir -p /etc/service/zcash
-ADD contrib/init/zcashd.run /etc/service/zcash/run
+#ADD contrib/init/zcashd.run /etc/service/zcash/run
+RUN cp /usr/local/src/zcash/contrib/init/zcashd.run /etc/service/zcash/run
 RUN chmod +x /etc/service/zcash/run
-Contact
