@@ -1,13 +1,10 @@
 FROM phusion/baseimage:0.9.19
 
-# from https://github.com/sneak/zcash/Dockerfile
+# based on https://github.com/sneak/zcash/blob/master/Dockerfile
 
 ENV HOME=/var/lib/zcash \
     GITSRC=/usr/local/src/zcash \
     GITURL=https://github.com/sneak/zcash
-
-# homedir is a data volume
-VOLUME [ "${HOME}" ]
 
 # install build deps
 RUN \
@@ -106,6 +103,9 @@ RUN \
         /usr/include \
         /usr/local/include \
 
+
+# homedir is a data volume
+VOLUME [ "${HOME}" ]
 
 # ports: RPC & P2P
 EXPOSE 8232 8233
