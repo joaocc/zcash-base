@@ -35,7 +35,7 @@ RUN \
 ## add source
 #ADD . /usr/local/src/zcash
 ## add source (tweaked to run outside of zcash git repo)
-RUN git clone --depth 1 https://github.com/sneak/zcash /usr/local/src/zcas
+RUN git clone --depth 1 https://github.com/sneak/zcash /usr/local/src/zcash
 
 # download dependencies
 RUN cd /usr/local/src/zcash/zcash/depends && \
