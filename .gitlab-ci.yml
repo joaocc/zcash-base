@@ -17,29 +17,33 @@ variables:
 before_script:
   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
 
-build_:
+build:latest:
   stage: build
   script:
     - docker build --tag $CONTAINER_BASE_NAME:latest   --pull --file Dockerfile .
 
-build2:
+build:original:
   stage: build
   script:
     - docker build --tag $CONTAINER_BASE_NAME:original --pull --file Dockerfile.original .
 
-release:
+release:latest:
   stage: release
   script:
     - docker push        $CONTAINER_BASE_NAME:latest
   only:
     - master
+  dependencies:
+    - build:latest
 
-release2:
+release:original:
   stage: release
   script:
     - docker push        $CONTAINER_BASE_NAME:original
   only:
     - master
+  dependencies:
+    - build:original
 
 # older version (working, but only sequentially parellel)
 #
