@@ -38,7 +38,7 @@ RUN \
 RUN git clone --depth 1 https://github.com/sneak/zcash /usr/local/src/zcash
 
 # download dependencies
-RUN cd /usr/local/src/zcash/zcash/depends && \
+RUN cd /usr/local/src/zcash/depends && \
     make download-linux
 
 # build and install to /usr/local/bin
