@@ -8,48 +8,36 @@ services:
 stages:
 - build
 # - test
-- release
+# - release
 # - deploy
 
 variables:
-  CONTAINER_BASE_NAME:   registry.gitlab.com/joaocc/zcash-base
+  REGISTRY_GITLAB:       registry.gitlab.com
+  CONTAINER_BASE_NAME:   $REGISTRY_GITLAB/joaocc/zcash-base
 
 before_script:
-  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY_GITLAB
 
+# ----------------------------------------------------------
 build:latest:
   stage: build
   script:
     - docker build --tag $CONTAINER_BASE_NAME:latest   --pull --file Dockerfile .
+    - docker push        $CONTAINER_BASE_NAME:latest
 
 build:official:
   stage: build
   script:
     - docker build --tag $CONTAINER_BASE_NAME:official --pull --file Dockerfile.official .
+    - docker push        $CONTAINER_BASE_NAME:official
 
-release:latest:
-  stage: release
-  script:
-    - docker push  $CONTAINER_BASE_NAME:latest
-    - docker push  $CONTAINER_BASE_NAME:official
-  only:
-    - master
-
-# older version (working, but only sequentially parellel)
-#
-# build_image:
-#   image: docker:git
-#   services:
-#   - docker:dind
+# # ----------------------------------------------------------
+# release:all:
+#   stage: release
 #   script:
-#     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
-#
-#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile           --tag latest    .
-#     - docker push registry.gitlab.com/joaocc/zcash-base:latest
-#
-#     - docker build -t registry.gitlab.com/joaocc/zcash-base --file Dockerfile.official  --tag official  .
-#     - docker push registry.gitlab.com/joaocc/zcash-base:official
-#
+#     - docker push $CONTAINER_BASE_NAME:latest
+#     - docker push $CONTAINER_BASE_NAME:official
 #   only:
 #     - master
-
+#   environment:
+#     name: registry_gitlab
