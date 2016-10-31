@@ -41,6 +41,12 @@ RUN git clone --depth 1 https://github.com/sneak/zcash /usr/local/src/zcash
 RUN cd /usr/local/src/zcash/depends && \
     make download-linux
 
+# set up service to run on container start
+RUN mkdir -p /etc/service/zcash
+#ADD contrib/init/zcashd.run /etc/service/zcash/run
+RUN cp /usr/local/src/zcash/contrib/init/zcashd.run /etc/service/zcash/run
+RUN chmod +x /etc/service/zcash/run
+
 # build and install to /usr/local/bin
 # FIXME build and run tests here too
 RUN \
@@ -102,8 +108,3 @@ EXPOSE 8232
 # p2p port
 EXPOSE 8233
 
-# set up service to run on container start
-RUN mkdir -p /etc/service/zcash
-#ADD contrib/init/zcashd.run /etc/service/zcash/run
-RUN cp /usr/local/src/zcash/contrib/init/zcashd.run /etc/service/zcash/run
-RUN chmod +x /etc/service/zcash/run
