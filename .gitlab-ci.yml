@@ -1,4 +1,5 @@
 # based on https://docs.gitlab.com/ce/ci/docker/using_docker_build.html
+# reference: https://docs.gitlab.com/ee/ci/yaml/README.html
 
 image: docker:latest
 services:
